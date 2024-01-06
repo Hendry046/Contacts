@@ -145,8 +145,43 @@ public class MainActivity extends AppCompatActivity {
                     filteredContacts.add(contact);
                 }
             }
+            // Sort the filtered contacts based on similarity to the search query
+            sortContactsBySimilarity(filteredContacts, query);
         }
 
         return filteredContacts;
     }
+
+    // Custom sorting method based on similarity to the search query
+    private void sortContactsBySimilarity(List<Contact> contacts, final String query) {
+        contacts.sort((contact1, contact2) -> {
+            // Calculate the similarity score for each contact
+            int score1 = calculateSimilarityScore(contact1.getName().toLowerCase(), query.toLowerCase());
+            int score2 = calculateSimilarityScore(contact2.getName().toLowerCase(), query.toLowerCase());
+
+            // Sort in descending order of similarity score
+            return Integer.compare(score2, score1);
+        });
+    }
+
+    // Calculate similarity score between two strings
+    private int calculateSimilarityScore(String s1, String s2) {
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+
+        for (int i = 0; i <= s1.length(); i++) {
+            for (int j = 0; j <= s2.length(); j++) {
+                if (i == 0 || j == 0) {
+                    dp[i][j] = 0;
+                } else if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+
+        int lcs = dp[s1.length()][s2.length()];
+        return 2 * lcs - s1.length() - s2.length();
+    }
+
 }
